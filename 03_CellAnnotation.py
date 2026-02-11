@@ -37,6 +37,12 @@ def parse_args():
         default="Results/03_CellAnnotation",
         help="Output directory for plots and CSV files (default: Results/03_CellAnnotation)",
     )
+    parser.add_argument(
+        "--output_h5ad",
+        type=str,
+        default="",
+        help="Path for annotated h5ad output (default: <output_dir>/Parasite_annotated.h5ad)",
+    )
     return parser.parse_args()
 
 
@@ -194,3 +200,10 @@ outpath, csv_path = plot_cell_proportion(
 print(f"\nCell proportion plot saved to: {outpath}")
 if csv_path:
     print(f"Cell proportion table saved to: {csv_path}")
+
+######################################################## Export annotated h5ad ########################################################
+output_h5ad_path = args.output_h5ad.strip() if args.output_h5ad and str(args.output_h5ad).strip() else None
+if output_h5ad_path is None:
+    output_h5ad_path = os.path.join(output_dir, "Parasite_annotated.h5ad")
+Parasite.write_h5ad(output_h5ad_path)
+print(f"\nAnnotated h5ad saved to: {output_h5ad_path}")
