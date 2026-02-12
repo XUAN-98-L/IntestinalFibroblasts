@@ -1,10 +1,9 @@
 ######################################################## Import libraries ########################################################
 import os
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
-import seaborn as sns
+from matplotlib.lines import Line2D
 ######################################################## Functions ########################################################
 # Custom color palette for Ontogeny
 my_palette = [
@@ -202,7 +201,6 @@ def plot_umap_by_stage(
     return fig_facet, individual_figs
 
 
-
 def plot_score(
     adata,
     color_values,
@@ -330,7 +328,7 @@ def plot_score(
 
     # ----- Export two CSVs for Loupe Browser: UMAP coordinates + score/expression -----
     cell_names = adata.obs["CellName"].values if "CellName" in adata.obs.columns else adata.obs_names
-    barcodes = [convert_barcode_format(b) for b in cell_names]
+    barcodes = [_convert_barcode_for_loupe(b) for b in cell_names]
 
     umap_csv = os.path.join(output_dir, "loupe_browser_umap.csv")
     umap_df = pd.DataFrame({
@@ -368,114 +366,3 @@ def convert_barcode_format(barcode):
             if "-" in prefix:
                 return f"{prefix.rsplit('-', 1)[0]}-{suffix}"
     return str(barcode)
-
-
-def plot_cell_proportion(
-    adata,
-    output_dir,
-    stage_order,
-    stage_colors,
-    output_filename="representations_parasite.pdf",
-    identity_col="New_name",
-    stage_col="stage_grouped",
-    figsize=(12, 5),
-    dpi=300,
-    export_csv=True,
-    csv_filename=None,
-):
-    """
-    Stacked horizontal bar plot: % of Cells and Number of Cells per identity (rows) and stage (colors).
-    Saves PDF to output_dir. Optionally exports a CSV with n_cells and pct_cells per (identity, stage).
-    Rows sorted by total cell count (highest at top).
-    """
-    df = adata.obs[[identity_col, stage_col]].copy()
-    df = df[df[identity_col].notna()]
-    counts_df = df.groupby([identity_col, stage_col]).size().reset_index(name="n_cells")
-    new_name_totals = df.groupby(identity_col).size().reset_index(name="total_cells_per_new_name")
-    counts_df = counts_df.merge(new_name_totals, on=identity_col)
-    counts_df["pct_cells"] = (counts_df["n_cells"] / counts_df["total_cells_per_new_name"]) * 100
-    representation_long = pd.melt(
-        counts_df,
-        id_vars=[identity_col, stage_col],
-        value_vars=["pct_cells", "n_cells"],
-        var_name="measure",
-        value_name="value",
-    )
-    representation_long["measure"] = representation_long["measure"].replace(
-        {"pct_cells": "% of Cells", "n_cells": "Number of Cells"}
-    )
-    representation_long[stage_col] = pd.Categorical(
-        representation_long[stage_col], categories=stage_order, ordered=True
-    )
-    n_cells_data = representation_long[representation_long["measure"] == "Number of Cells"]
-    total_cells_per_identity = n_cells_data.groupby(identity_col)["value"].sum().sort_values(ascending=False)
-    identity_order = total_cells_per_identity.index.tolist()
-    representation_long[identity_col] = pd.Categorical(
-        representation_long[identity_col], categories=identity_order, ordered=True
-    )
-    sns.set_style("white")
-    fig, axes = plt.subplots(1, 2, figsize=figsize, sharey=True)
-    measures = ["% of Cells", "Number of Cells"]
-    for idx, measure in enumerate(measures):
-        ax = axes[idx]
-        measure_data = representation_long[representation_long["measure"] == measure]
-        pivot_data = measure_data.pivot_table(
-            index=identity_col, columns=stage_col, values="value", fill_value=0
-        )
-        pivot_data = pivot_data[[s for s in stage_order if s in pivot_data.columns]]
-        pivot_data = pivot_data.reindex(identity_order[::-1])
-        left = np.zeros(len(pivot_data))
-        for stage in stage_order:
-            if stage in pivot_data.columns:
-                ax.barh(
-                    range(len(pivot_data)),
-                    pivot_data[stage],
-                    left=left,
-                    label=stage,
-                    color=stage_colors.get(stage, "#808080"),
-                    height=1.0,
-                    edgecolor="none",
-                )
-                left += pivot_data[stage]
-        ax.set_yticks(range(len(pivot_data)))
-        ax.set_yticklabels(pivot_data.index)
-        ax.set_xlabel("")
-        ax.set_ylabel("")
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
-        ax.spines["left"].set_color("black")
-        ax.spines["bottom"].set_color("black")
-        ax.grid(False)
-        ax.set_title(measure, size=15, pad=10)
-        ax.set_xlim(left=0)
-    handles = [
-        plt.Rectangle((0, 0), 1, 1, color=stage_colors[stage], label=stage)
-        for stage in stage_order if stage in stage_colors
-    ]
-    fig.legend(
-        handles=handles,
-        labels=[h.get_label() for h in handles],
-        title="Infection Stage",
-        loc="lower center",
-        ncol=len(stage_order),
-        bbox_to_anchor=(0.5, -0.05),
-        frameon=False,
-        fontsize=12,
-        title_fontsize=12,
-    )
-    plt.tight_layout(rect=[0, 0.05, 1, 1])
-    os.makedirs(output_dir, exist_ok=True)
-    outpath = os.path.join(output_dir, output_filename)
-    fig.savefig(outpath, dpi=dpi, bbox_inches="tight", format="pdf")
-    plt.close(fig)
-
-    csv_path = None
-    if export_csv:
-        if csv_filename is None:
-            csv_filename = os.path.splitext(output_filename)[0] + "_proportion.csv"
-        csv_path = os.path.join(output_dir, csv_filename)
-        export_df = counts_df[[identity_col, stage_col, "n_cells", "pct_cells"]].copy()
-        export_df = export_df.sort_values([identity_col, stage_col])
-        export_df.to_csv(csv_path, index=False)
-    return outpath, csv_path
-
