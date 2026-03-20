@@ -1,4 +1,5 @@
 #conda activate IntestinalFibroblasts_scRNAseq
+# conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 # Barcode extract for loupe browser export
 python Script/01_Barcode_extract.py --h5ad_file Data/Parasite_Clustered.h5ad --output_dir Results/01_Barcode_extract/Parasite_Clustered --ontogeny_h5ad Data/OntogenyData_OnlyFBs_Xuan.h5ad --ontogeny_output_dir Results/01_Barcode_extract/Ontogeny_Clustered
 
@@ -23,6 +24,9 @@ Rscript Script/05_Pseudobulk.R --input Results/03_CellAnnotation/Parasite_annota
 
 # Pseudobulk analysis for Parasite dataset
 Rscript Script/05_Pseudobulk.R --input Results/03_CellAnnotation/Parasite_annotated.h5ad --output_dir Results/05_Pseudobulk_Parasite/stage_grouped --cluster_col New_name --design "~1+stage_grouped" --iteration_bycelltype FALSE --feature_anno Data/Genomic_Features.tsv
+
+# Pseudobulk analysis for Ontogeny dataset
+Rscript Script/05_Pseudobulk.R --input Data/OntogenyData_OnlyFBs_Xuan.h5ad --output_dir Results/05_Pseudobulk_Ontogeny/stage_grouped --cluster_col identity --design "~1+stage_grouped" --iteration_bycelltype FALSE --feature_anno Data/Genomic_Features.tsv
 
 # For ontogeny dataset, try "identity" "Ccl11+ MF,Ccl11-Osr1+ MF,Ccl11-Actg2hi MF,Ccl11- MF"
 Rscript Script/05_Pseudobulk.R --input Data/OntogenyData_OnlyFBs_Xuan.h5ad --output_dir Results/05_Pseudobulk_Ontogeny/MF_only --cluster_col identity --design "~1+stage_grouped" --iteration_bycelltype FALSE --feature_anno Data/Genomic_Features.tsv --subset "identity" --idents "Ccl11+ MF,Ccl11-Osr1+ MF,Ccl11-Actg2hi MF,Ccl11- MF"
@@ -53,3 +57,20 @@ python Script/06_DEG_rank_genes_groups.py --input Data/OntogenyData_OnlyFBs_Xuan
 #  "--n_genes","10"
 # ]
 # args = parse_args()
+
+
+# GSVA analysis for Ontogeny dataset (with all celltypes)
+Rscript Script/07_GSVA_pseudobulk.R --input Results/05_Pseudobulk_Ontogeny/stage_grouped --output_dir Results/07_GSVA_pseudobulk/Ontogeny_stage_grouped --feature_anno Data/Genomic_Features.tsv --deg_fdr 0.05
+
+Rscript Script/07_GSVA_pseudobulk.R --input Results/05_Pseudobulk_Parasite/stage_grouped --output_dir Results/07_GSVA_pseudobulk/Parasite_stage_grouped --feature_anno Data/Genomic_Features.tsv --deg_fdr 0.05
+
+# GSVA with top n pathways
+Rscript Script/08_GSVA_ANOVA.R --input Results/07_GSVA_pseudobulk/Ontogeny_stage_grouped --output_dir Results/08_GSVA_ANOVA/Ontogeny_stage_grouped --subset FALSE --top_n 10
+
+Rscript Script/08_GSVA_ANOVA.R --input Results/07_GSVA_pseudobulk/Parasite_stage_grouped --output_dir Results/08_GSVA_ANOVA/Parasite_stage_grouped --subset FALSE --top_n 10
+
+
+# FOR ECM organization
+Rscript Script/07_GSVA_pseudobulk.R --input Results/05_Pseudobulk_Parasite/identity_stage_grouped --output_dir Results/07_GSVA_pseudobulk/Parasite_identity_stage_grouped --feature_anno Data/Genomic_Features.tsv --deg_fdr 0.05
+
+Rscript Script/09_GSVA_singlepathway_vis.R --input Results/07_GSVA_pseudobulk/Parasite_identity_stage_grouped --output_dir Results/09_GSVA_singlepathway_vis/Parasite_identity_stage_grouped --pathway "Extracellular matrix organization" --method "reactome"
