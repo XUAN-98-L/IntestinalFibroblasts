@@ -1,4 +1,4 @@
-# conda activate IntestinalFibroblasts_scRNAseq
+# conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 # Downstream of 05_Pseudobulk.R (cell-type subset, e.g. MF_only):
 # Pairwise stage comparisons: shortly_after_birth vs embryonic,
 #   after_weaning vs shortly_after_birth, uninfected_adult vs after_weaning

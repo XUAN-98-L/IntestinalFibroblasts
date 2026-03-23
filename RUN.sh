@@ -1,4 +1,3 @@
-#conda activate IntestinalFibroblasts_scRNAseq
 # conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 # Barcode extract for loupe browser export
 python Script/01_Barcode_extract.py --h5ad_file Data/Parasite_Clustered.h5ad --output_dir Results/01_Barcode_extract/Parasite_Clustered --ontogeny_h5ad Data/OntogenyData_OnlyFBs_Xuan.h5ad --ontogeny_output_dir Results/01_Barcode_extract/Ontogeny_Clustered
@@ -65,12 +64,16 @@ Rscript Script/07_GSVA_pseudobulk.R --input Results/05_Pseudobulk_Ontogeny/stage
 Rscript Script/07_GSVA_pseudobulk.R --input Results/05_Pseudobulk_Parasite/stage_grouped --output_dir Results/07_GSVA_pseudobulk/Parasite_stage_grouped --feature_anno Data/Genomic_Features.tsv --deg_fdr 0.05
 
 # GSVA with top n pathways
-Rscript Script/08_GSVA_ANOVA.R --input Results/07_GSVA_pseudobulk/Ontogeny_stage_grouped --output_dir Results/08_GSVA_ANOVA/Ontogeny_stage_grouped --subset FALSE --top_n 10
+Rscript Script/08_GSVA_ANOVA.R --input Results/07_GSVA_pseudobulk/Ontogeny_stage_grouped --output_dir Results/08_GSVA_ANOVA/Ontogeny_stage_grouped --subset FALSE --top_n 30
 
-Rscript Script/08_GSVA_ANOVA.R --input Results/07_GSVA_pseudobulk/Parasite_stage_grouped --output_dir Results/08_GSVA_ANOVA/Parasite_stage_grouped --subset FALSE --top_n 10
+Rscript Script/08_GSVA_ANOVA.R --input Results/07_GSVA_pseudobulk/Parasite_stage_grouped --output_dir Results/08_GSVA_ANOVA/Parasite_stage_grouped --subset FALSE --top_n 30
 
 
 # FOR ECM organization
 Rscript Script/07_GSVA_pseudobulk.R --input Results/05_Pseudobulk_Parasite/identity_stage_grouped --output_dir Results/07_GSVA_pseudobulk/Parasite_identity_stage_grouped --feature_anno Data/Genomic_Features.tsv --deg_fdr 0.05
 
 Rscript Script/09_GSVA_singlepathway_vis.R --input Results/07_GSVA_pseudobulk/Parasite_identity_stage_grouped --output_dir Results/09_GSVA_singlepathway_vis/Parasite_identity_stage_grouped --pathway "Extracellular matrix organization" --method "reactome"
+
+Rscript Script/09_GSVA_singlepathway_vis.R --input Results/07_GSVA_pseudobulk/Ontogeny_stage_grouped --output_dir Results/09_GSVA_singlepathway_vis/Ontogeny_stage_grouped --pathway "Extracellular matrix organization" --method "reactome" --facet_ncol 4 --facet_nrow 5
+
+# Heatmap for genes in "Extracellular matrix organization"

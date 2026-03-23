@@ -1,7 +1,7 @@
-# conda activate IntestinalFibroblasts_scRNAseq
+# conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 #=========================Script Description=================================
 # Force reticulate to use Python from conda env (must set before library(reticulate))
-python_path <- path.expand("~/.conda/envs/IntestinalFibroblasts_scRNAseq/bin/python")
+python_path <- "/data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts/bin/python"
 if (file.exists(python_path)) Sys.setenv(RETICULATE_PYTHON = python_path)
 #=========================Loading Packages===================================
 suppressMessages(library("optparse"))

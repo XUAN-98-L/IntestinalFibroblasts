@@ -4,6 +4,7 @@ suppressMessages(library("optparse"))
 suppressMessages(library("dplyr"))
 suppressMessages(library("tidyverse"))
 suppressMessages(library("reshape2"))
+suppressMessages(library("SummarizedExperiment"))
 
 ######### Helper functions (consistent with 08_GSVA_ANOVA.R) #########
 short_group_name <- function(x) {
@@ -105,6 +106,7 @@ if (!file.exists(gsva_path)) {
 }
 
 gsva_res <- readRDS(gsva_path)
+gsva_res <- SummarizedExperiment::assay(gsva_res)
 
 # Melt + annotate (Reactome needs prefix stripping like in 08_GSVA_ANOVA.R)
 gene_set_prefix <- if (tolower(opt$method) == "reactome") "REACTOME_" else NULL
@@ -149,7 +151,8 @@ plot_file <- file.path(
   paste0("GSVA_", opt$method, "_", sanitize_filename(pathway), ".pdf")
 )
 
-pdf(plot_file, width = 2, height = 6)
+#pdf(plot_file, width = 2, height = 6)
+pdf(plot_file, width = opt$facet_ncol * 2, height = opt$facet_nrow * 2)
 print(
   ggplot(plotdata, aes(y = GSVAscore, x = PlotGroup, color = PlotGroup)) +
     geom_point() +

@@ -1,7 +1,7 @@
-# conda activate IntestinalFibroblasts_scRNAseq
+# conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 #=========================Script Description=================================
 # Force reticulate to use Python from conda env (must set before library(reticulate))
-python_path <- path.expand("~/.conda/envs/IntestinalFibroblasts_scRNAseq/bin/python")
+python_path <- "/data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts/bin/python"
 if (file.exists(python_path)) Sys.setenv(RETICULATE_PYTHON = python_path)
 #=========================Loading Packages===================================
 #BiocManager::install("beachmat")
@@ -49,11 +49,14 @@ option_list <- list(
               help = "subset the data by a column name. default is NULL"
     ),make_option(c("--idents"),type = "character", default = NULL,
               help = "Subset by identity. default is NULL"
-)
+    ),make_option(c("--seed"),type = "integer", default = 123,
+              help = "Set the seed for the random number generator. default is 123"
+    )
 )
 opt_parser <- OptionParser(option_list = option_list)
 opt <- parse_args(opt_parser)
 #============================================================================
+set.seed(opt$seed)
 if (is.null(opt$output)) {
   print("NO OUTPUT PATH SUPPLIED,current directory will be used!")
   output_dir <- getwd()

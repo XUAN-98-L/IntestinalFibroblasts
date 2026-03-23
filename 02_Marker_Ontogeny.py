@@ -1,5 +1,5 @@
 ######################################################## Import libraries ########################################################
-# conda activate IntestinalFibroblasts_scRNAseq
+# conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 import argparse
 import scanpy as sc
 import anndata as ad

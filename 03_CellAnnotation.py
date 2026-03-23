@@ -1,4 +1,4 @@
-# conda activate IntestinalFibroblasts_scRNAseq
+# conda activate /data/gpfs/projects/punim2435/Project/Env/IntestinalFibroblasts
 ######################################################## Import libraries ########################################################
 import argparse
 import importlib.util
